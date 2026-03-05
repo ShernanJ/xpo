@@ -464,5 +464,6 @@ If you’re a collaborator, investor, or want access for a deeper technical revi
 ## Contact
 
 * Founder: **Shernan Javier**
-* X: [@yourhandle](https://x.com/yourhandle)
-* Email: [you@domain.com](mailto:you@domain.com)
+* X: [@shernanjavier](https://x.com/shernanjavier)
+* LinkedIn: [Shernan Javier](https://linkedin.com/in/shernanjavier)
+* Email: [shernanjavier@gmail.com](mailto:shernanjavier@gmail.com)
