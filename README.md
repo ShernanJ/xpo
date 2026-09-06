@@ -1,50 +1,113 @@
-# xpo.lol - stanley for x proof of concept
+# Xpo
 
-<img width="1245" height="767" alt="Screenshot 2026-05-11 at 4 16 45 AM" src="https://github.com/user-attachments/assets/7691ef46-3907-40d2-83d6-868586062ac7" />
+AI growth tool for X with account analysis, voice-aware drafting, reply discovery, and a companion browser extension.
 
-<br/><br/>
+<img width="1245" height="767" alt="Xpo" src="https://github.com/user-attachments/assets/7691ef46-3907-40d2-83d6-868586062ac7" />
 
+[Portfolio Case Study](https://shernanjavier.com/work/xpo) · [Build-in-public post](https://www.linkedin.com/posts/shernanjavier_buildinpublic-hiringinpublic-stan-ugcPost-7446465824376348672-dj54)
 
-Created an app to try to convince Stan to hire me. Did not get the role but gained a lot of clout and connections :D
-[LinkedIn Post](https://www.linkedin.com/posts/shernanjavier_buildinpublic-hiringinpublic-stan-ugcPost-7446465824376348672-dj54)
+## The idea
 
-<a href="https://www.linkedin.com/posts/shernanjavier_buildinpublic-hiringinpublic-stan-ugcPost-7446465824376348672-dj54"><img width="365" height="395" alt="image" src="https://github.com/user-attachments/assets/398619d4-1cc9-4b72-ac27-d8fd1a494e6d" /></a>
+Xpo started as **Stanley for X**, a proof of concept I built to try to convince the team at Stan to hire me.
 
+I didn't get the role, but the project reached a lot of people, led to new connections, and eventually grew into a larger product around helping creators understand their account, find opportunities to engage, and write in their own voice.
 
-## Updating this soon
+## What it does
 
-This repository currently ships a single Next.js application in `apps/web`. The app is an X creator assistant and growth workflow product with onboarding, chat-based AI orchestration, reply assistance, source-material grounding, billing, and a companion extension API.
+- Analyzes an X account and builds an initial creator strategy
+- Grounds AI outputs in source material, previous posts, and account positioning
+- Supports ideation, drafting, revision, replies, and post analysis
+- Finds and ranks good reply opportunities
+- Generates context-aware replies through a companion browser extension
+- Includes authentication, billing, entitlements, and persistent creator workspaces
 
-This README documents the live implementation in the repo today. When the code and older planning docs disagree, treat the code in `apps/web` as the source of truth.
+## How it works
 
-## Current State
+```text
+X account + source material
+          ↓
+   creator profile
+          ↓
+ strategy + voice context
+          ↓
+      AI workspace
+     ↙            ↘
+drafting        replies
+                  ↓
+         browser extension
+````
 
-- Active runtime: `apps/web`
-- Primary stack: Next.js 16, React 19, TypeScript, Tailwind CSS 4
-- Persistence: Prisma 7 on PostgreSQL
-- Auth: Supabase identity plus a custom app session cookie
-- AI runtime: Groq SDK for structured chat, planning, drafting, revision, reply, and analysis flows
-- Billing: Stripe checkout, portal, webhooks, and local entitlement tracking
-- Companion surfaces: browser extension APIs, onboarding APIs, creator chat APIs
+## Technical highlights
 
-Important repo note:
+* Built a structured AI runtime for planning, drafting, revision, reply generation, and post analysis
+* Grounded outputs in creator-provided facts, stories, playbooks, and previous content
+* Designed persistent chat threads, memories, source materials, onboarding runs, and product events
+* Built APIs for browser-extension authentication, opportunity ranking, and reply generation
+* Added Stripe checkout, billing state, webhooks, and entitlement controls
+* Implemented multiple onboarding data-source paths with production-safe fallback behavior
 
-- The top-level `apps/api`, `packages/*`, `workers/*`, and `infra/` folders are currently empty placeholders, not the shipped runtime.
-- The old root README described a planned multi-package architecture with Neon and Upstash workers. That is not the current implementation.
+## Stack
 
-## What The App Does
+`Next.js 16` · `React 19` · `TypeScript` · `Tailwind CSS 4` · `PostgreSQL` · `Prisma` · `Supabase` · `Groq` · `Stripe`
 
-The live app combines several product surfaces:
+## Companion extension
 
-- Landing and onboarding for X account analysis and strategy bootstrapping
-- A `/chat` workspace with multi-turn AI assistance for ideation, planning, drafting, revision, replies, and post analysis
-- Source-material management for grounding outputs in user-provided facts, stories, and playbooks
-- Billing and entitlement controls for free, Pro, and lifetime plans
-- Companion extension APIs for reply opportunity ranking and reply draft workflows
+The browser extension adds Xpo directly to the browsing workflow.
 
-## Repo Layout
+It can inspect visible X posts, evaluate which conversations are worth joining, and request reply drafts using the creator's existing voice and account context.
 
-The practical layout for engineers is:
+The extension communicates with the main Xpo application through authenticated APIs for:
+
+* opportunity ranking
+* reply options
+* reply generation
+* extension sessions
+* interaction logging
+
+## Architecture
+
+The shipped application currently runs as a single Next.js deployment in `apps/web`.
+
+```text
+Browser
+   ↓
+Next.js UI + API routes
+   ↓
+Domain logic
+├── AI runtime
+├── onboarding
+├── creator memory
+├── billing
+└── extension workflows
+   ↓
+Prisma
+   ↓
+PostgreSQL
+```
+
+External services provide authentication, model inference, billing, and X data access.
+
+For a deeper technical breakdown:
+
+* [`docs/app-architecture.md`](docs/app-architecture.md)
+* [`docs/app-diagrams.md`](docs/app-diagrams.md)
+
+## Project origin
+
+The original Stanley for X prototype came from seeing Stan experiment publicly with hiring engineers through build-in-public challenges.
+
+So I made something instead of sending another application.
+
+<a href="https://www.linkedin.com/posts/shernanjavier_buildinpublic-hiringinpublic-stan-ugcPost-7446465824376348672-dj54">
+  <img width="365" height="395" alt="Stanley for X LinkedIn post" src="https://github.com/user-attachments/assets/398619d4-1cc9-4b72-ac27-d8fd1a494e6d" />
+</a>
+
+That prototype eventually became Xpo.
+
+<details>
+<summary><strong>Repo structure</strong></summary>
+
+The active application lives in `apps/web`.
 
 ```text
 .
@@ -56,7 +119,7 @@ The practical layout for engineers is:
 │   └── web/
 │       ├── app/              # App Router pages and API routes
 │       ├── components/       # Shared UI and providers
-│       ├── lib/              # Domain logic: agent runtime, onboarding, billing, auth, extension
+│       ├── lib/              # AI, onboarding, billing, auth, extension logic
 │       ├── prisma/           # Schema and migrations
 │       ├── public/
 │       ├── scripts/
@@ -67,68 +130,34 @@ The practical layout for engineers is:
     └── app-diagrams.md
 ```
 
-The root package is not the app entrypoint. Develop from `apps/web`.
+The top-level `apps/api`, `packages/*`, `workers/*`, and `infra/` directories are placeholders from an earlier architecture plan and are not part of the shipped runtime.
 
-## Getting Started
+</details>
 
-1. Install dependencies for the app package:
-
-   ```bash
-   cd apps/web
-   pnpm install
-   ```
-
-2. Copy the environment template:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-3. Fill the minimum required values:
-
-   - `DATABASE_URL`
-   - `DATABASE_MIGRATION_URL`
-   - `SUPABASE_URL`
-   - `SUPABASE_ANON_KEY`
-   - `SESSION_SECRET`
-   - `GROQ_API_KEY`
-
-4. Start the app:
-
-   ```bash
-   pnpm dev
-   ```
-
-5. Open [http://localhost:3000](http://localhost:3000).
-
-## Environment Groups
-
-The canonical env template lives at [`apps/web/.env.example`](apps/web/.env.example).
-
-The variables are grouped into these areas:
-
-- Core app: database, Supabase, session secret
-- AI provider: Groq API key and optional model override
-- Public URLs and support email
-- Monetization flags and pricing display values
-- Stripe checkout and webhook configuration
-- Onboarding source mode selection
-- X scrape and X API credentials
-- Onboarding backfill tuning
-- Developer flags and script-only helpers
-
-Operational notes:
-
-- `NEXTAUTH_*` variables are marked deprecated in the env template.
-- `ONBOARDING_MODE` controls whether onboarding uses scrape, X API, mock, or auto fallback.
-- In production, mock onboarding fallback is intentionally guarded by `ONBOARDING_ALLOW_MOCK_FALLBACK`.
-
-## Common Commands
-
-Run these from `apps/web`:
+<details>
+<summary><strong>Run locally</strong></summary>
 
 ```bash
+cd apps/web
+pnpm install
+cp .env.example .env
 pnpm dev
+```
+
+Minimum environment variables:
+
+```text
+DATABASE_URL
+DATABASE_MIGRATION_URL
+SUPABASE_URL
+SUPABASE_ANON_KEY
+SESSION_SECRET
+GROQ_API_KEY
+```
+
+Useful commands:
+
+```bash
 pnpm build
 pnpm lint
 pnpm test:ui
@@ -137,68 +166,23 @@ pnpm test:v2
 pnpm test:extension
 ```
 
-Additional useful scripts:
+</details>
 
-```bash
-pnpm replay:creator-transcript
-pnpm capture:user-tweets
-pnpm scrape:user-tweets:http
-```
+<details>
+<summary><strong>Implementation notes</strong></summary>
 
-## Architecture Overview
+* Primary persistence is Prisma on PostgreSQL
+* Authentication uses Supabase identity with a custom application session
+* The current LLM gateway uses the Groq SDK
+* Stripe handles checkout, portal access, webhooks, and entitlement state
+* `ONBOARDING_MODE` supports scrape, X API, mock, and automatic fallback paths
+* Production mock fallback is guarded explicitly
+* Legacy NextAuth code remains in the repository but is not the primary authentication path
 
-At a high level, the app works like this:
+The older files below describe architecture direction and migration work rather than the exact shipped runtime:
 
-1. The browser UI submits structured chat or onboarding requests to Next.js route handlers in `apps/web/app/api`.
-2. Route-boundary helpers normalize input, resolve workspace and auth state, and assemble domain context.
-3. Domain logic in `apps/web/lib` handles AI orchestration, onboarding analysis, billing, extension workflows, and persistence policies.
-4. Prisma writes chat threads, messages, memories, onboarding runs, source materials, billing state, extension tokens, and product events to PostgreSQL.
-5. External services provide identity, billing, model inference, and X data access.
+* [`PLAN.md`](PLAN.md)
+* [`Artifact.md`](Artifact.md)
+* [`LIVE_AGENT.md`](LIVE_AGENT.md)
 
-For the detailed audit and diagrams, see:
-
-- [`docs/app-architecture.md`](docs/app-architecture.md)
-- [`docs/app-diagrams.md`](docs/app-diagrams.md)
-
-## Main Runtime Areas
-
-### Frontend
-
-- `apps/web/app/page.tsx`: landing entrypoint
-- `apps/web/app/onboarding/*`: onboarding flow
-- `apps/web/app/chat/page.tsx`: primary chat workspace
-- `apps/web/app/chat/_features/*`: extracted chat feature state and UI
-- `apps/web/app/pricing/*`, `apps/web/app/login/*`, `apps/web/app/extension/connect/*`: supporting product surfaces
-
-### API
-
-- `apps/web/app/api/auth/*`: auth login, session, logout, email code flows
-- `apps/web/app/api/onboarding/*`: preview, run, validate, scrape, backfill
-- `apps/web/app/api/creator/v2/*`: chat, threads, preferences, source materials, feedback, draft analysis/candidates
-- `apps/web/app/api/billing/*` and `apps/web/app/api/stripe/webhook/route.ts`: checkout, portal, billing state, Stripe events
-- `apps/web/app/api/extension/*`: extension token, opportunity batch, reply options, reply drafts, reply logs
-
-### Domain Logic
-
-- `apps/web/lib/agent-v2/*`: AI runtime, capabilities, validators, workers, memory, responses, grounding
-- `apps/web/lib/onboarding/*`: data-source resolution, analysis, strategy, profile hydration, persistence, backfill
-- `apps/web/lib/billing/*`: entitlements, policy, Stripe helpers, credit ledger logic
-- `apps/web/lib/auth/*`: Supabase auth integration and custom session handling
-- `apps/web/lib/extension/*`: token auth, reply opportunity logic, extension contracts
-
-## Current Implementation Notes
-
-- The shipped app is a single Next.js deployment boundary, not a live multi-service monorepo.
-- The chat runtime is mid-migration toward cleaner runtime boundaries, and the supporting migration notes live in the docs below.
-- A legacy NextAuth dependency and route exist in the repo, but the primary login/session flow is Supabase-backed with a custom cookie session.
-- The current LLM gateway is the Groq SDK. The code also supports `openai/*` model identifiers through the same client path.
-
-## Migration Reference Docs
-
-These files are still useful, but they describe migration intent and target-state architecture more than the exact shipped runtime:
-
-- [`PLAN.md`](PLAN.md)
-- [`Artifact.md`](Artifact.md)
-- [`LIVE_AGENT.md`](LIVE_AGENT.md)
-
-Use them as architecture direction, not as a replacement for the live code audit in `docs/`.
+</details>
