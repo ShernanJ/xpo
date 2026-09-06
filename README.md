@@ -8,9 +8,9 @@ AI growth tool for X with account analysis, voice-aware drafting, reply discover
 
 ## The idea
 
-Xpo started as **Stanley for X**, a proof of concept I built to try to convince the team at Stan to hire me.
+Most AI writing tools can generate posts, but they usually don't understand the person they're writing for.
 
-I didn't get the role, but the project reached a lot of people, led to new connections, and eventually grew into a larger product around helping creators understand their account, find opportunities to engage, and write in their own voice.
+Xpo is built around learning a creator's account, source material, previous content, and positioning so it can help with strategy, drafting, replies, and engagement without flattening everything into the same generic AI voice.
 
 ## What it does
 
