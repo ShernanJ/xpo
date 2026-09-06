@@ -2,7 +2,7 @@
 
 AI growth tool for X with account analysis, voice-aware drafting, reply discovery, and a companion browser extension.
 
-<img width="1245" height="767" alt="Xpo" src="https://github.com/user-attachments/assets/7691ef46-3907-40d2-83d6-868586062ac7" />
+![Xpo](./.github/assets/hero.webp)
 
 [Portfolio Case Study](https://shernanjavier.com/work/xpo) · [Build-in-public post](https://www.linkedin.com/posts/shernanjavier_buildinpublic-hiringinpublic-stan-ugcPost-7446465824376348672-dj54)
 
