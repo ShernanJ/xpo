@@ -4,6 +4,7 @@ import { processContextPrimer } from "@/lib/inngest/functions/processContextPrim
 import { processDeepBackfill } from "@/lib/inngest/functions/processDeepBackfill";
 import { processHistoricalBackfillYear } from "@/lib/inngest/functions/processHistoricalBackfillYear";
 import { processOnboardingRun } from "@/lib/inngest/functions/processOnboardingRun";
+import { refreshScraperTokens } from "@/lib/inngest/functions/refreshScraperTokens";
 import { inngest } from "@/lib/inngest/client";
 
 export const { GET, POST, PUT } = serve({
@@ -13,5 +14,6 @@ export const { GET, POST, PUT } = serve({
     processContextPrimer,
     processHistoricalBackfillYear,
     processDeepBackfill,
+    refreshScraperTokens,
   ],
 });

@@ -28,6 +28,11 @@ export interface OnboardingHistoricalBackfillYearRequestedEventData {
   userId: string;
 }
 
+export interface ScraperAccountLockedEventData {
+  accountId: string;
+  status: "LOCKED" | "BANNED";
+}
+
 export interface AppInngestEventMap {
   "onboarding/run.requested": {
     data: OnboardingRunRequestedEventData;
@@ -40,6 +45,9 @@ export interface AppInngestEventMap {
   };
   "onboarding/historical.backfill.year.requested": {
     data: OnboardingHistoricalBackfillYearRequestedEventData;
+  };
+  "scraper/account.locked": {
+    data: ScraperAccountLockedEventData;
   };
 }
 
