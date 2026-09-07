@@ -6,9 +6,8 @@ This document audits the live implementation in `apps/web`. It is intentionally 
 
 - The shipped product is a single Next.js App Router application in `apps/web`.
 - The app combines onboarding, chat-based AI assistance, grounded drafting/revision, reply workflows, billing, and companion extension APIs.
-- The active runtime relies on Prisma + PostgreSQL, Supabase identity plus a custom session cookie, Stripe billing, and the Groq SDK for model calls.
-- The repository still contains top-level placeholder folders (`apps/api`, `packages/*`, `workers/*`, `infra/`), but they are empty and are not part of the current runtime.
-- The root README that previously lived here described a planned architecture, not the implementation that is currently running.
+- The active runtime relies on Prisma + PostgreSQL, Supabase identity plus a custom session cookie, Stripe billing, Inngest background jobs, and the Groq SDK for model calls.
+- The repository is intentionally centered on the shipped `apps/web` application rather than the older planned multi-package architecture.
 
 ## Product Surfaces
 
@@ -85,6 +84,7 @@ Primary domains:
 
 - `lib/agent-v2`: AI runtime, workflows, validators, worker execution metadata, memory, response shaping, grounding
 - `lib/onboarding`: X account capture, analysis, strategy generation, profile hydration, persistence, backfill
+- `lib/inngest`: deferred onboarding, context-primer, and historical X scrape jobs
 - `lib/billing`: entitlements, credit policy, Stripe API helpers, lifetime slot logic
 - `lib/auth`: Supabase auth integration and app session handling
 - `lib/extension`: extension token auth, reply opportunity ranking, reply-support endpoints
@@ -100,10 +100,6 @@ Current behavior:
 - login and session flows use Supabase identity plus a custom app session cookie
 - `apps/web/lib/auth/serverSession.ts` loads the signed session token and resolves the app user from Prisma
 - the env template explicitly marks `NEXTAUTH_*` as deprecated
-
-Audit note:
-
-- a legacy NextAuth route and dependency still exist, but they do not appear to be the primary auth path
 
 ### Onboarding
 
@@ -168,6 +164,22 @@ Current behavior:
 - extension token issuance
 
 This surface shares the same persistence and product-event infrastructure as the main app, but uses a separate token auth mechanism.
+
+### Inngest
+
+Deferred jobs are exposed through `apps/web/app/api/inngest/route.ts` and implemented under `apps/web/lib/inngest`.
+
+Registered functions:
+
+- `processOnboardingRun`: runs scrape-first onboarding work out of band
+- `processContextPrimer`: primes deeper context after scrape-backed onboarding
+- `processHistoricalBackfillYear`: captures historical X context by year
+- `processDeepBackfill`: pages through additional X timeline history
+
+Local scripts:
+
+- `pnpm dev:inngest`: starts Next.js with Inngest dev mode enabled
+- `pnpm inngest:dev`: runs the local Inngest dev server against `/api/inngest`
 
 ## AI Runtime Audit
 
@@ -526,7 +538,7 @@ Current behavior:
 
 ## Onboarding Pipeline Audit
 
-The onboarding pipeline is synchronous request handling plus optional deferred backfill.
+The onboarding pipeline supports both request-bound execution and deferred Inngest execution for scrape-heavy work.
 
 Main stages:
 
@@ -546,7 +558,7 @@ Main stages:
 6. Persist the onboarding run
 7. Sync posts into Prisma for later retrieval and style profiling
 8. Regenerate the user style profile
-9. Enqueue a background backfill job when deeper history is recommended
+9. Enqueue Inngest-backed context-primer or historical backfill work when deeper history is recommended
 
 Storage used by onboarding:
 
@@ -555,10 +567,6 @@ Storage used by onboarding:
 - `VoiceProfile`
 - `ScrapeCaptureCache`
 - file-backed or Postgres-backed scrape/backfill state depending on env configuration
-
-Audit note:
-
-- onboarding currently behaves more like app-managed workflow processing than an external worker queue architecture
 
 ## Data Model Audit
 
@@ -626,6 +634,15 @@ Used for:
 
 - structured model inference across planning, drafting, critique, revision, reply, and analysis
 
+### Inngest
+
+Used for:
+
+- deferred onboarding jobs
+- scrape-backed context priming
+- historical X timeline backfill
+- deep backfill retries and retry-after behavior around scraper limits
+
 ### X data access
 
 Used for:
@@ -636,19 +653,7 @@ Used for:
 
 ## Audit Findings
 
-### 1. Documentation drift is significant
-
-The old root README described a planned multi-package system with `apps/api`, `packages/*`, `workers/*`, Neon, and Upstash queues. The live app is a single `apps/web` deployment boundary, and those top-level folders are empty placeholders today.
-
-### 2. Current auth implementation differs from legacy naming
-
-The live login/session flow is Supabase plus a custom signed session cookie. NextAuth still appears in the dependency tree and a legacy route exists, but the env template and active routes indicate that NextAuth is not the primary runtime path.
-
-### 3. Migration docs are useful but not a current-state source of truth
-
-`PLAN.md`, `Artifact.md`, and `LIVE_AGENT.md` are valuable architecture references, but they mix shipped behavior with target-state migration language. Engineers need a separate current-state audit, which is the purpose of this document and the companion diagrams.
-
-### 4. The main orchestration hotspots are still large
+### 1. The main orchestration hotspots are still large
 
 Current rough sizes in the live workspace:
 
@@ -659,12 +664,13 @@ Current rough sizes in the live workspace:
 
 These are manageable, but they remain the highest-value files to watch when reasoning about architecture changes.
 
-### 5. The runtime is centralized inside `apps/web/lib`
+### 2. The runtime is centralized inside `apps/web/lib`
 
 Despite older monorepo planning, the actual app keeps most business logic inside the Next.js package:
 
 - AI runtime
 - onboarding pipeline
+- Inngest job handlers
 - billing rules
 - auth/session logic
 - extension workflows
@@ -676,4 +682,4 @@ That makes `apps/web/lib` the real application core today.
 - Treat `apps/web` as the application boundary.
 - Use the route-private `_features` and `_lib` folders before growing top-level route files.
 - Use the runtime and onboarding docs in this `docs/` folder when you need current behavior.
-- Use `PLAN.md`, `Artifact.md`, and `LIVE_AGENT.md` for migration intent and target architecture.
+- Use `docs/product-notes/` for product and operator handoff notes that are useful but not source-of-truth architecture docs.

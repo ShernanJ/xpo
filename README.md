@@ -35,7 +35,7 @@ X account + source material
 drafting        replies
                   ↓
          browser extension
-````
+```
 
 ## Technical highlights
 
@@ -45,10 +45,11 @@ drafting        replies
 * Built APIs for browser-extension authentication, opportunity ranking, and reply generation
 * Added Stripe checkout, billing state, webhooks, and entitlement controls
 * Implemented multiple onboarding data-source paths with production-safe fallback behavior
+* Used Inngest functions for deferred X scraping, context priming, and historical backfill work
 
 ## Stack
 
-`Next.js 16` · `React 19` · `TypeScript` · `Tailwind CSS 4` · `PostgreSQL` · `Prisma` · `Supabase` · `Groq` · `Stripe`
+`Next.js 16` · `React 19` · `TypeScript` · `Tailwind CSS 4` · `PostgreSQL` · `Prisma` · `Supabase` · `Groq` · `Stripe` · `Inngest`
 
 ## Companion extension
 
@@ -78,6 +79,7 @@ Domain logic
 ├── onboarding
 ├── creator memory
 ├── billing
+├── Inngest jobs
 └── extension workflows
    ↓
 Prisma
@@ -85,7 +87,7 @@ Prisma
 PostgreSQL
 ```
 
-External services provide authentication, model inference, billing, and X data access.
+External services provide authentication, model inference, billing, deferred job execution, and X data access.
 
 For a deeper technical breakdown:
 
@@ -112,14 +114,11 @@ The active application lives in `apps/web`.
 ```text
 .
 ├── README.md
-├── PLAN.md
-├── Artifact.md
-├── LIVE_AGENT.md
 ├── apps/
 │   └── web/
 │       ├── app/              # App Router pages and API routes
 │       ├── components/       # Shared UI and providers
-│       ├── lib/              # AI, onboarding, billing, auth, extension logic
+│       ├── lib/              # AI, onboarding, billing, auth, Inngest, extension logic
 │       ├── prisma/           # Schema and migrations
 │       ├── public/
 │       ├── scripts/
@@ -127,10 +126,9 @@ The active application lives in `apps/web`.
 │       └── .env.example
 └── docs/
     ├── app-architecture.md
-    └── app-diagrams.md
+    ├── app-diagrams.md
+    └── product-notes/
 ```
-
-The top-level `apps/api`, `packages/*`, `workers/*`, and `infra/` directories are placeholders from an earlier architecture plan and are not part of the shipped runtime.
 
 </details>
 
@@ -159,6 +157,8 @@ Useful commands:
 
 ```bash
 pnpm build
+pnpm dev:inngest
+pnpm inngest:dev
 pnpm lint
 pnpm test:ui
 pnpm test:e2e
@@ -175,14 +175,9 @@ pnpm test:extension
 * Authentication uses Supabase identity with a custom application session
 * The current LLM gateway uses the Groq SDK
 * Stripe handles checkout, portal access, webhooks, and entitlement state
+* Inngest handles deferred onboarding, context-primer, and historical X backfill jobs through `apps/web/app/api/inngest`
 * `ONBOARDING_MODE` supports scrape, X API, mock, and automatic fallback paths
 * Production mock fallback is guarded explicitly
-* Legacy NextAuth code remains in the repository but is not the primary authentication path
-
-The older files below describe architecture direction and migration work rather than the exact shipped runtime:
-
-* [`PLAN.md`](PLAN.md)
-* [`Artifact.md`](Artifact.md)
-* [`LIVE_AGENT.md`](LIVE_AGENT.md)
+* Product and operator handoff notes live under [`docs/product-notes`](docs/product-notes)
 
 </details>

@@ -2,8 +2,6 @@
 
 These diagrams describe the live implementation in `apps/web`, not the older planned monorepo shape.
 
-If a diagram here disagrees with a migration note in `PLAN.md`, `Artifact.md`, or `LIVE_AGENT.md`, interpret this file as the current-state runtime map and the migration docs as target-state direction.
-
 ## 1. System And Infrastructure Diagram
 
 ```mermaid
@@ -27,6 +25,7 @@ flowchart LR
 
     subgraph domain_libs["Domain libraries in apps/web/lib"]
       agent_runtime["agent-v2\nruntime, capabilities, validators, workers"]
+      inngest_jobs["inngest\nonboarding and scrape backfill jobs"]
       onboarding_lib["onboarding\nsources, analysis, strategy, pipeline, store"]
       billing_lib["billing\nentitlements, credits, Stripe helpers"]
       auth_lib["auth\nSupabase integration and session cookies"]
@@ -43,6 +42,7 @@ flowchart LR
 
   subgraph external["External services"]
     supabase["Supabase auth"]
+    inngest_ext["Inngest\nfunction orchestration"]
     groq["Groq SDK\nstructured model calls"]
     stripe["Stripe\ncheckout, portal, webhooks"]
     x_scrape["X scrape source\nweb cookies and scrape state"]
@@ -71,15 +71,21 @@ flowchart LR
   stripe_api --> billing_lib
   extension_api --> extension_lib
   extension_api --> shared_libs
+  onboarding_api --> inngest_jobs
 
   auth_lib --> supabase
   agent_runtime --> groq
   billing_lib --> stripe
+  inngest_jobs --> inngest_ext
+  inngest_ext --> inngest_jobs
+  inngest_jobs --> onboarding_lib
+  inngest_jobs --> x_scrape
   onboarding_lib --> x_scrape
   onboarding_lib --> x_api
 
   shared_libs --> prisma
   agent_runtime --> prisma
+  inngest_jobs --> prisma
   onboarding_lib --> prisma
   billing_lib --> prisma
   extension_lib --> prisma
@@ -93,9 +99,9 @@ What each section does:
 - `Clients`: the browser UI and extension are the two entrypoints into the system.
 - `apps/web Next.js app`: the single shipped application boundary for pages and API routes.
 - `API route groups`: request-specific boundaries for auth, onboarding, creator workflows, billing, Stripe events, and extension traffic.
-- `Domain libraries`: where the application logic actually lives today.
+- `Domain libraries`: where the application logic and Inngest job handlers actually live today.
 - `Persistence`: Prisma plus PostgreSQL hold the durable product state, while scrape/backfill state can be file- or DB-backed.
-- `External services`: Supabase handles identity, Groq handles model calls, Stripe handles payments, and X sources feed onboarding data.
+- `External services`: Supabase handles identity, Inngest orchestrates background functions, Groq handles model calls, Stripe handles payments, and X sources feed onboarding data.
 
 ## 2. Application Module Map
 
@@ -392,6 +398,7 @@ What each section does:
 sequenceDiagram
   participant U as Browser onboarding UI
   participant O as POST /api/onboarding/run
+  participant I as Inngest functions
   participant V as parseOnboardingInput and billing guards
   participant S as resolveOnboardingDataSource
   participant X as scrape source or X API source
@@ -405,29 +412,32 @@ sequenceDiagram
   U->>O: submit account, goal, cadence, tone, time budget
   O->>V: validate payload and handle limits
   V-->>O: normalized onboarding input
-  O->>S: resolve data source
+  O->>I: dispatch scrape-heavy onboarding when deferred execution is used
+  I->>S: resolve data source
   S->>X: scrape first, X API if configured, mock fallback if needed
-  X-->>S: profile, posts, replies, quotes, warnings
-  S-->>O: resolved data source payload
-  O->>A: run onboarding pipeline service
+  X-->>S: profile, posts, replies, quotes, warnings, cursors
+  S-->>I: resolved data source payload
+  I->>A: run onboarding pipeline service
   A->>A: compute baseline, growth stage, content distribution, hook patterns, strategy state, analysis confidence
-  A-->>O: OnboardingResult
-  O->>P: persist onboarding run
+  A-->>I: OnboardingResult
+  I->>P: persist onboarding run
   P->>DB: write OnboardingRun
-  O->>DB: sync posts and update user active handle
-  O->>SP: regenerate voice style profile
+  I->>DB: sync posts and update user active handle
+  I->>SP: regenerate voice style profile
   SP->>DB: write VoiceProfile
-  O->>B: maybe enqueue deeper backfill
-  B-->>O: backfill job metadata
+  I->>B: enqueue context primer, historical backfill, or deep backfill
+  B-->>I: backfill job metadata
+  I-->>O: job and result status
   O-->>UI: runId, persistedAt, backfill status, onboarding result
 ```
 
 What each section does:
 
 - `POST /api/onboarding/run`: the request boundary for the main onboarding flow.
+- `Inngest functions`: run deferred onboarding, context-primer, historical backfill, and deep backfill jobs.
 - `parseOnboardingInput and billing guards`: ensure the request is valid and allowed for the user’s plan.
 - `resolveOnboardingDataSource`: decides whether the app should use scrape data, X API data, or mock fallback.
 - `onboarding analysis pipeline`: turns raw posts and profile data into a growth model and strategy payload.
 - `onboarding run store`: persists the canonical onboarding result for later chat grounding.
 - `generateStyleProfile`: converts synced content into reusable voice/style memory for the AI runtime.
-- `backfill pipeline`: optionally deepens the captured history after the initial onboarding result is returned.
+- `backfill pipeline`: deepens captured X history after the initial onboarding result is returned.
