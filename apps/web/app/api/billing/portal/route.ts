@@ -8,6 +8,7 @@ import {
   resolveCheckoutBaseUrl,
 } from "@/lib/billing/stripe";
 import { isMonetizationEnabled } from "@/lib/billing/monetization";
+import { isDemoUserId } from "@/lib/demo/identity";
 import {
   buildErrorResponse,
   enforceSessionMutationRateLimit,
@@ -33,6 +34,17 @@ export async function POST(request: NextRequest) {
       { ok: false, errors: [{ field: "auth", message: "Unauthorized" }] },
       { status: 401 },
     );
+  }
+
+  if (isDemoUserId(session.user.id)) {
+    return buildErrorResponse({
+      status: 403,
+      field: "billing",
+      message: "Billing portal is disabled in portfolio demo sessions.",
+      extras: {
+        code: "DEMO_BILLING_DISABLED",
+      },
+    });
   }
 
   const rateLimitError = await enforceSessionMutationRateLimit(request, {

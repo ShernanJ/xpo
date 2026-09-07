@@ -140,6 +140,28 @@ test("resolveComposerViewState keeps the hero available for a new handle before 
   ]);
 });
 
+test("resolveComposerViewState exposes a concrete reply prompt in demo workspaces", () => {
+  const viewState = resolveComposerViewState({
+    context: buildContext({
+      source: "demo" as CreatorAgentContext["source"],
+    }),
+    accountName: "mayaops",
+    activeThreadId: null,
+    messagesLength: 0,
+    isLeavingHero: false,
+  });
+
+  expect(viewState.heroQuickActions).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        kind: "prompt",
+        label: "draft a reply",
+        prompt: expect.stringContaining("@nora_builds"),
+      }),
+    ]),
+  );
+});
+
 test("buildDefaultExampleQuickReplies falls back cleanly when context is thin", () => {
   expect(buildDefaultExampleQuickReplies(null, null)).toEqual([
     {

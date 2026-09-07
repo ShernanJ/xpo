@@ -14,6 +14,7 @@ import {
 import { getLifetimeSlotsSummary } from "@/lib/billing/lifetimeSlots";
 import { toBillingStatePayload } from "@/lib/billing/state";
 import type { BillingStatePayload } from "@/lib/billing/types";
+import { isDemoUserId } from "@/lib/demo/identity";
 
 function addDays(value: Date, days: number): Date {
   const next = new Date(value);
@@ -309,10 +310,25 @@ export async function getBillingStateForUser(userId: string): Promise<BillingSta
   const entitlement = await ensureBillingEntitlement(userId);
   const lifetimeSlots = await getLifetimeSlotsSummary();
 
-  return toBillingStatePayload({
+  const state = toBillingStatePayload({
     entitlement,
     lifetimeSlots,
   });
+  if (!isDemoUserId(userId)) {
+    return state;
+  }
+
+  return {
+    ...state,
+    billing: {
+      ...state.billing,
+      showFirstPricingModal: false,
+    },
+    offers: state.offers.map((offer) => ({
+      ...offer,
+      enabled: false,
+    })),
+  };
 }
 
 export function resolveCycleFromOffer(offer: "pro_monthly" | "pro_annual"): "monthly" | "annual" {

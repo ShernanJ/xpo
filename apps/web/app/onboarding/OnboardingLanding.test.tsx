@@ -97,6 +97,17 @@ beforeEach(() => {
   });
 });
 
+test("shows an archive disclosure with a demo link", () => {
+  render(<OnboardingLanding pricingOffers={[]} />);
+
+  expect(screen.getByRole("status")).toHaveTextContent(/archived project/i);
+  expect(screen.getByRole("status")).toHaveTextContent(/no longer actively supported/i);
+  expect(screen.getByRole("link", { name: /try demo/i })).toHaveAttribute(
+    "href",
+    "/api/demo/start",
+  );
+});
+
 test("faq cards toggle from the full card control and keep multi-open behavior", async () => {
   const user = userEvent.setup();
 

@@ -20,6 +20,7 @@ import { ChatSidebar } from "../workspace-chrome/ChatSidebar";
 interface ChatWorkspaceCanvasProps {
   workspaceChromeProps: Omit<ChatWorkspaceChromeProviderProps, "children">;
   canvasProps: Omit<ChatCanvasProviderProps, "children">;
+  demoNotice?: ReactNode;
   threadContent: ReactNode;
 }
 
@@ -27,6 +28,7 @@ export function ChatWorkspaceCanvas(props: ChatWorkspaceCanvasProps) {
   const {
     workspaceChromeProps,
     canvasProps,
+    demoNotice,
     threadContent,
   } = props;
 
@@ -39,6 +41,7 @@ export function ChatWorkspaceCanvas(props: ChatWorkspaceCanvasProps) {
           <LayoutGroup id="chat-composer-handoff">
             <div className="relative flex h-full min-h-0 flex-1 flex-col">
               <ChatHeader />
+              {demoNotice}
 
               <ChatThreadView
                 hero={<ChatHero />}

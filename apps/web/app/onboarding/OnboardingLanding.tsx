@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useSession } from "@/lib/auth/client";
-import { PenLine, Search, Sparkles, Target } from "lucide-react";
+import { AlertTriangle, PenLine, Search, Sparkles, Target } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { XShell } from "@/components/x-shell";
@@ -1490,6 +1490,29 @@ export default function OnboardingLanding({ pricingOffers }: OnboardingLandingPr
                   <p className="mx-auto max-w-2xl text-sm leading-7 text-zinc-400 sm:text-base">
                     Drop your handle. Xpo reads your account and gives you the next best move.
                   </p>
+                  <div
+                    role="status"
+                    className="mx-auto mt-6 flex max-w-2xl items-start gap-3 rounded-lg border border-amber-300/20 bg-amber-300/[0.08] px-4 py-3 text-left"
+                  >
+                    <AlertTriangle
+                      aria-hidden="true"
+                      className="mt-0.5 h-4 w-4 shrink-0 text-amber-200"
+                    />
+                    <div className="text-xs leading-5 text-amber-50/75 sm:text-sm">
+                      <p className="font-semibold text-amber-50">Archived project</p>
+                      <p>
+                        Xpo is deprecated and no longer actively supported. Live account
+                        scanning may be unavailable.{" "}
+                        <Link
+                          href="/api/demo/start"
+                          className="font-semibold text-amber-50 underline underline-offset-4 transition hover:text-white"
+                        >
+                          Try Demo
+                        </Link>{" "}
+                        to see how it would have looked.
+                      </p>
+                    </div>
+                  </div>
                 </motion.div>
 
                 <motion.div

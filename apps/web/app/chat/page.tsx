@@ -2048,6 +2048,15 @@ function ChatPageContent() {
           shouldCenterHero,
           onScrollToBottom: scrollThreadToBottom,
         }}
+        demoNotice={
+          context?.source === "demo" ? (
+            <div className="border-b border-white/10 bg-white/[0.035] px-4 py-2 text-center text-[11px] leading-5 text-zinc-400 sm:px-6">
+              <span className="font-semibold text-zinc-200">Portfolio demo.</span>{" "}
+              Live X ingestion is disabled; this workspace uses a fixed account snapshot while
+              Xpo&apos;s normal product workflows run against persisted demo data.
+            </div>
+          ) : null
+        }
         threadContent={
           <ChatMessageStreamSurface<ChatMessage>
             isVisible={!isNewChatHero && !isLeavingHero}

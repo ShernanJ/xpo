@@ -29,6 +29,7 @@ import {
   capturePostHogServerEvent,
   capturePostHogServerException,
 } from "@/lib/posthog/server";
+import { isDemoUserId } from "@/lib/demo/identity";
 
 const CheckoutRequestSchema = z.object({
   offer: z.enum(["pro_monthly", "pro_annual", "lifetime"]),
@@ -98,6 +99,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { ok: false, errors: [{ field: "auth", message: "Unauthorized" }] },
       { status: 401 },
+    );
+  }
+
+  if (isDemoUserId(session.user.id)) {
+    return NextResponse.json(
+      {
+        ok: false,
+        code: "DEMO_BILLING_DISABLED",
+        errors: [
+          {
+            field: "billing",
+            message: "Checkout is disabled in portfolio demo sessions.",
+          },
+        ],
+      },
+      { status: 403 },
     );
   }
 

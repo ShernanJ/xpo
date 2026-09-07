@@ -1,4 +1,5 @@
 import type { OnboardingInput } from "../types";
+import { buildDemoDataSource } from "./demoSource";
 import { resolveScrapeDataSource } from "./scrapeSource";
 import type { OnboardingDataSource, OnboardingMode } from "./types";
 import {
@@ -15,7 +16,7 @@ export function getConfiguredOnboardingMode(): OnboardingMode {
     .trim()
     .toLowerCase();
 
-  if (raw === "x_api" || raw === "scrape" || raw === "mock") {
+  if (raw === "x_api" || raw === "scrape" || raw === "mock" || raw === "demo") {
     return raw;
   }
 
@@ -37,6 +38,10 @@ export async function resolveOnboardingDataSource(
     throw new Error(
       "ONBOARDING_MODE=mock is disabled. Configure a real onboarding source instead.",
     );
+  }
+
+  if (mode === "demo") {
+    return buildDemoDataSource();
   }
 
   if (mode === "x_api") {

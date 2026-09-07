@@ -5,6 +5,7 @@ import {
   computeHookPatterns,
 } from "../analysis/postAnalysis";
 import { resolveOnboardingDataSource } from "../sources/resolveOnboardingSource";
+import type { OnboardingDataSource } from "../sources/types";
 import type {
   AnalysisConfidence,
   OnboardingInput,
@@ -232,6 +233,25 @@ export async function runOnboarding(input: OnboardingInput): Promise<OnboardingR
   const postingCadenceCapacity = input.postingCadenceCapacity ?? "1_per_day";
   const replyBudgetPerDay = input.replyBudgetPerDay ?? "5_15";
   const dataSource = await resolveOnboardingDataSource(input);
+  return buildOnboardingResultFromDataSource({
+    dataSource,
+    input,
+    postingCadenceCapacity,
+    replyBudgetPerDay,
+  });
+}
+
+export function buildOnboardingResultFromDataSource(args: {
+  dataSource: OnboardingDataSource;
+  input: OnboardingInput;
+  postingCadenceCapacity?: PostingCadenceCapacity;
+  replyBudgetPerDay?: ReplyBudgetPerDay;
+}): OnboardingResult {
+  const postingCadenceCapacity =
+    args.postingCadenceCapacity ?? args.input.postingCadenceCapacity ?? "1_per_day";
+  const replyBudgetPerDay =
+    args.replyBudgetPerDay ?? args.input.replyBudgetPerDay ?? "5_15";
+  const { input, dataSource } = args;
   const {
     source,
     profile,

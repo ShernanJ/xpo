@@ -14,4 +14,4 @@ export interface OnboardingDataSource {
   syncState?: OnboardingResult["syncState"];
 }
 
-export type OnboardingMode = "auto" | "x_api" | "scrape" | "mock";
+export type OnboardingMode = "auto" | "x_api" | "scrape" | "mock" | "demo";

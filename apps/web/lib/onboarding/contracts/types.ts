@@ -156,7 +156,7 @@ export interface AnalysisConfidence {
 
 export interface OnboardingResult {
   account: string;
-  source: "mock" | "x_api" | "scrape";
+  source: "demo" | "mock" | "x_api" | "scrape";
   generatedAt: string;
   profile: XPublicProfile;
   pinnedPost: XPinnedPost | null;

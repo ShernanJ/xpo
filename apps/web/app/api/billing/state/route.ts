@@ -15,6 +15,7 @@ import {
 } from "@/lib/billing/stripe";
 import { isMonetizationEnabled } from "@/lib/billing/monetization";
 import { shouldActivateProFromCheckoutSession } from "@/lib/billing/rules";
+import { isDemoUserId } from "@/lib/demo/identity";
 
 async function reconcileBillingFromCheckoutSession(args: {
   userId: string;
@@ -202,7 +203,7 @@ export async function GET(request: NextRequest) {
   }
 
   const checkoutSessionId = request.nextUrl.searchParams.get("session_id")?.trim() || "";
-  if (checkoutSessionId) {
+  if (checkoutSessionId && !isDemoUserId(session.user.id)) {
     try {
       await reconcileBillingFromCheckoutSession({
         userId: session.user.id,
@@ -213,12 +214,14 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  try {
-    await reconcileBillingFromStoredStripeState({
-      userId: session.user.id,
-    });
-  } catch (error) {
-    console.error("Failed billing reconciliation from stored Stripe state", error);
+  if (!isDemoUserId(session.user.id)) {
+    try {
+      await reconcileBillingFromStoredStripeState({
+        userId: session.user.id,
+      });
+    } catch (error) {
+      console.error("Failed billing reconciliation from stored Stripe state", error);
+    }
   }
 
   const state = await getBillingStateForUser(session.user.id);

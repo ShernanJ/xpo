@@ -21,6 +21,12 @@ Xpo is built around learning a creator's account, source material, previous cont
 - Generates context-aware replies through a companion browser extension
 - Includes authentication, billing, entitlements, and persistent creator workspaces
 
+## Portfolio demo
+
+Use **Try Demo** on the landing page for a low-friction walkthrough. Demo mode creates a disposable session, seeds a fixed creator snapshot, source materials, and reply opportunities, then runs the same persisted workspace, context, drafting, revision, and reply-generation flows the real app uses.
+
+The demo deliberately does not call live X ingestion. Stripe checkout and the billing portal are disabled for demo users, and demo data is pruned after a short retention window.
+
 ## How it works
 
 ```text
@@ -139,6 +145,7 @@ The active application lives in `apps/web`.
 cd apps/web
 pnpm install
 cp .env.example .env
+pnpm run deploy:prepare
 pnpm dev
 ```
 
@@ -152,6 +159,10 @@ SUPABASE_ANON_KEY
 SESSION_SECRET
 GROQ_API_KEY
 ```
+
+For local portfolio demos, `DATABASE_URL` must point at a reachable PostgreSQL database with migrations applied, and `SESSION_SECRET` must be set so the app can sign the demo session cookie. Click **Try Demo** or open `/api/demo/start`; it uses the built-in `mayaops` fixture regardless of live X credentials.
+
+To keep a Supabase Free database awake for portfolio traffic, set `SUPABASE_KEEPALIVE_SECRET` and schedule an external cron to call `/api/keepalive/supabase` with `Authorization: Bearer ...` a few times per day. The route only runs `select 1`; it does not create demo users or mutate product data.
 
 Useful commands:
 
@@ -176,8 +187,8 @@ pnpm test:extension
 * The current LLM gateway uses the Groq SDK
 * Stripe handles checkout, portal access, webhooks, and entitlement state
 * Inngest handles deferred onboarding, context-primer, and historical X backfill jobs through `apps/web/app/api/inngest`
-* `ONBOARDING_MODE` supports scrape, X API, mock, and automatic fallback paths
-* Production mock fallback is guarded explicitly
+* `ONBOARDING_MODE` supports demo, scrape, X API, mock, and automatic fallback paths
+* Demo mode is first-class portfolio fixture data; production mock fallback remains guarded explicitly
 * Product and operator handoff notes live under [`docs/product-notes`](docs/product-notes)
 
 </details>

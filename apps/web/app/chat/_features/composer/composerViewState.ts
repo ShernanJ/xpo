@@ -118,8 +118,9 @@ function buildDefaultPromptPool(profile: ComposerCommandProfileContext): string[
 function buildHeroQuickActions(
   profile: ComposerCommandProfileContext,
   lowercase: boolean,
+  includeDemoReplyAction = false,
 ): HeroQuickAction[] {
-  return [
+  const actions: HeroQuickAction[] = [
     {
       kind: "prompt",
       label: applyChipVoiceCase("Write a post", lowercase),
@@ -136,6 +137,19 @@ function buildHeroQuickActions(
       prompt: applyChipVoiceCase("analyze my profile", lowercase),
     },
   ];
+
+  if (includeDemoReplyAction) {
+    actions.push({
+      kind: "prompt",
+      label: applyChipVoiceCase("Draft a reply", lowercase),
+      prompt: applyChipVoiceCase(
+        'draft a reply to this X post by @nora_builds: "Most AI products demo well until the first import fails. The recovery path tells you more about the team than the happy path."',
+        lowercase,
+      ),
+    });
+  }
+
+  return actions;
 }
 
 function buildDefaultExamplePromptPool(
@@ -265,7 +279,11 @@ export function resolveComposerViewState(params: {
   });
   const lowercase = shouldUseLowercaseChipVoice(context);
   const profile = resolveComposerProfileContext(context, accountName);
-  const heroQuickActions = buildHeroQuickActions(profile, lowercase);
+  const heroQuickActions = buildHeroQuickActions(
+    profile,
+    lowercase,
+    context?.source === "demo",
+  );
   const slashCommands = getComposerSlashCommands();
   const commandPlaceholderPrompts = slashCommands.reduce<
     Record<(typeof slashCommands)[number]["id"], string[]>
