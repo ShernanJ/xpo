@@ -130,6 +130,13 @@ enum UserHandleStatus {
   active
 }
 
+enum ScraperProxyAccountStatus {
+  ACTIVE
+  RATE_LIMITED
+  LOCKED
+  BANNED
+}
+
 enum Persona {
   EDUCATOR
   CURATOR
@@ -418,15 +425,20 @@ model OnboardingScrapeJob {
 }
 
 model ScraperProxyAccount {
-  id          String    @id @default(cuid())
-  sessionId   String    @unique
-  fleet       String
-  enabled     Boolean   @default(true)
-  lockedUntil DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id              String                    @id @default(cuid())
+  username        String                    @unique
+  password        String?
+  twoFactorSecret String?
+  authToken       String
+  ct0             String
+  status          ScraperProxyAccountStatus @default(ACTIVE)
+  lastUsedAt      DateTime                  @default(now())
+  cooldownUntil   DateTime?
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
 
-  @@index([fleet, enabled, lockedUntil])
+  @@index([status, lastUsedAt])
+  @@index([status, cooldownUntil])
 }
 
 model RequestRateLimitBucket {
